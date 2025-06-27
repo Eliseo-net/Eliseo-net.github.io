@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Mi Mundo de Aventuras! ✨</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Bubblegum Sans', cursive;
+        }
+        .accordion-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 1rem 1.5rem;
+            background-color: #fff;
+            border: 2px solid #a78bfa; 
+            border-radius: 1.5rem; 
+            font-size: 1.75rem; /* text-3xl */
+            font-weight: bold;
+            color: #4c1d95; /* purple-900 */
+            cursor: pointer;
+            transition: background-color 0.3s ease, border-color 0.3s ease, transform 0.2s ease;
+            margin-bottom: 0.75rem; /* space-y-3 between items */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .accordion-button:hover {
+            background-color: #ede9fe; /* purple-50 */
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+        }
+        .accordion-content {
+            padding: 1rem 1.5rem;
+            background-color: #f3e8ff; /* purple-100 */
+            border-radius: 1.5rem; /* rounded-3xl */
+            margin-top: -0.5rem; /* Overlap with button a bit for smooth visual */
+            margin-bottom: 0.75rem;
+            display: none; /* Hidden by default */
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out, margin-top 0.5s ease-out;
+            max-height: 0; /* For smooth animation */
+            color: #6d28d9; /* purple-700 */
+        }
+        .accordion-content.active {
+            display: block; /* Show when active */
+            max-height: 500px; /* Adjust as needed, large enough to contain content */
+            margin-top: 0.5rem; /* Adjust margin for active state */
+        }
+        .accordion-button svg {
+            transition: transform 0.3s ease;
+        }
+        .accordion-button.active svg {
+            transform: rotate(90deg);
+        }
+
+        /* Estilo para el canvas del Merge Cube */
+        #mergeCubeCanvas {
+            width: 100%;
+            height: 300px; /* Altura fija para el ejemplo, se ajustará por JS si es responsive */
+            display: block;
+            margin: 0 auto;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            background-color: #e0f2f7; /* Un color de fondo suave para el canvas */
+        }
+
+        /* Estilos para el mensaje emergente */
+        .message-box-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .message-box-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .message-box {
+            background-color: #fff;
+            padding: 2.5rem;
+            border-radius: 2rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 90%;
+            width: 450px;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            position: relative;
+            border: 5px solid #ffcc00; /* Yellow border */
+        }
+        .message-box-overlay.active .message-box {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .message-box h3 {
+            font-size: 2.5rem; /* text-4xl */
+            font-weight: bold;
+            color: #ef4444; /* red-500 */
+            margin-bottom: 1.5rem;
+        }
+        .message-box p {
+            font-size: 1.5rem; /* text-2xl */
+            color: #334155; /* slate-700 */
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+        .message-box button {
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+            font-size: 1.75rem; /* text-3xl */
+            font-weight: bold;
+            padding: 0.75rem 2rem;
+            border-radius: 1.5rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .message-box button:hover {
+            background-color: #2563eb; /* blue-600 */
+            transform: translateY(-2px);
+        }
+
+        /* --- Estilos para el Memorama 4x4 --- */
+        #memory-game-4x4-section { 
+            background-color: #fce7f3; /* Rosa claro */
+            border-radius: 2rem;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            text-align: center;
+            border: 4px solid #f0abfc; /* Rosa-púrpura */
+            margin-top: 2rem; /* Espacio con la sección anterior */
+        }
+        #memoryGame4x4Grid { 
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 10px;
+            max-width: 400px; 
+            margin: 20px auto;
+            perspective: 1000px;
+            padding: 10px; 
+        }
+        .memory-card { 
+            width: 90px; 
+            height: 90px;
+            background-color: #a78bfa; 
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem; 
+            cursor: pointer;
+            transition: transform 0.5s;
+            transform-style: preserve-3d;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 2px solid #6d28d9; 
+        }
+        .memory-card.flipped {
+            transform: rotateY(180deg);
+        }
+        .memory-card .front-face,
+        .memory-card .back-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+        }
+        .memory-card .front-face {
+            background-color: #fff;
+            color: #4c1d95; 
+            transform: rotateY(180deg);
+        }
+        .memory-card .back-face {
+            background-color: #a78bfa; 
+            color: white;
+            font-size: 1.5rem;
+        }
+        .memory-card.matched {
+            background-color: #6ee7b7; 
+            cursor: default;
+            border-color: #34d399; 
+            opacity: 0.8; 
+        }
+        #memoryGame4x4Message { 
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #4c1d95;
+            margin-top: 1rem;
+        }
+        #memory4x4RestartBtn { 
+            background-color: #f6ad55; 
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            padding: 0.75rem 2rem;
+            border-radius: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-top: 1.5rem;
+        }
+        #memory4x4RestartBtn:hover { 
+            background-color: #ed8936;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            #memoryGame4x4Grid { 
+                grid-template-columns: repeat(4, 1fr); 
+                max-width: 360px; 
+            }
+            .memory-card { 
+                width: 70px;
+                height: 70px;
+                font-size: 2rem;
+            }
+        }
+        @media (max-width: 480px) {
+            #memoryGame4x4Grid { 
+                grid-template-columns: repeat(3, 1fr); 
+                max-width: 270px;
+            }
+            .memory-card { 
+                width: 80px; 
+                height: 80px;
+                font-size: 1.8rem;
+            }
+        }
+
+        #vr-activity-section {
+            background-color: #e0f7fa; 
+            border-radius: 2rem;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            text-align: center;
+            border: 4px solid #80deea; 
+            margin-top: 2rem;
+        }
+        #vr-activity-section h3 {
+            font-size: 2.25rem;
+            font-weight: bold;
+            color: #00838f; 
+            margin-bottom: 1.5rem;
+        }
+        #vr-activity-section p, #vr-activity-section ul {
+            font-size: 1.15rem;
+            line-height: 1.8;
+            color: #37474f; 
+            text-align: left;
+            margin-bottom: 1rem;
+        }
+        #vr-activity-section ul {
+            list-style: disc;
+            list-style-position: inside;
+            padding-left: 1rem;
+        }
+        #vr-activity-section li {
+            margin-bottom: 0.5rem;
+        }
+        #vr-activity-section img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 1.5rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            border: 3px solid #00acc1; 
+        }
+        #vr-activity-section .section-title {
+            font-size: 2.5rem;
+            color: #006064; 
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        #my-podcast-section {
+            background-color: #fff3e0; 
+            border-radius: 2rem;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            text-align: center;
+            border: 4px solid #ffcc80; 
+            margin-top: 2rem;
+        }
+        #my-podcast-section h2 {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #e65100; 
+            margin-bottom: 1.5rem;
+        }
+        #my-podcast-section p {
+            font-size: 1.5rem;
+            line-height: 1.6;
+            color: #424242; 
+            margin-bottom: 2rem;
+        }
+        #my-podcast-section audio {
+            width: 80%;
+            max-width: 500px;
+            margin: 0 auto;
+            display: block;
+            border-radius: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #ffb74d; 
+        }
+        @media (max-width: 640px) {
+            #my-podcast-section audio {
+                width: 100%;
+            }
+        }
+
+        #teacher-planning-section {
+            background-color: #e8f5e9; 
+            border-radius: 2rem;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            text-align: center;
+            border: 4px solid #a5d6a7; 
+            margin-top: 2rem;
+        }
+        #teacher-planning-section h2 {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #2e7d32; 
+            margin-bottom: 1.5rem;
+        }
+        #teacher-planning-section p {
+            font-size: 1.5rem;
+            line-height: 1.6;
+            color: #424242; 
+            margin-bottom: 2rem;
+        }
+        .planning-images-container {
+            display: flex;
+            flex-direction: column; 
+            align-items: center; 
+            gap: 1.5rem; 
+        }
+        @media (min-width: 768px) {
+            .planning-images-container {
+                flex-direction: row; 
+                justify-content: center;
+            }
+        }
+        .planning-image-wrapper {
+            width: 100%; 
+            max-width: 350px; 
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            padding: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border: 3px solid #66bb6a; 
+        }
+        .planning-image-wrapper img {
+            width: 100%;
+            height: auto;
+            border-radius: 1rem;
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-blue-100 text-purple-800">
+
+    <header class="bg-yellow-400 shadow-lg py-4 sticky top-0 z-50 border-b-4 border-yellow-500">
+        <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center px-4">
+            <a href="#home" class="text-4xl sm:text-5xl font-extrabold text-red-700 rounded-xl p-3 bg-white shadow-md hover:bg-red-100 transition duration-300 transform hover:scale-105 mb-4 sm:mb-0">
+                ¡Mundo de Aventuras! 🚀
+            </a>
+
+            <nav>
+                <ul class="flex flex-wrap justify-center space-x-4 sm:space-x-6">
+                    <li>
+                        <a href="#home" class="text-2xl font-bold text-blue-800 bg-green-300 py-3 px-6 rounded-full shadow-md hover:bg-green-400 transition duration-300 transform hover:scale-105">
+                            🏠 Inicio
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#about" class="text-2xl font-bold text-blue-800 bg-pink-300 py-3 px-6 rounded-full shadow-md hover:bg-pink-400 transition duration-300 transform hover:scale-105">
+                            👋 Conócenos
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#eva" class="text-2xl font-bold text-blue-800 bg-emerald-300 py-3 px-6 rounded-full shadow-md hover:bg-emerald-400 transition duration-300 transform hover:scale-105">
+                            💻 ¿Qué es EVA?
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#cultura-digital" class="text-2xl font-bold text-blue-800 bg-cyan-300 py-3 px-6 rounded-full shadow-md hover:bg-cyan-400 transition duration-300 transform hover:scale-105">
+                            🌐 Mundo Digital
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#preguntas" class="text-2xl font-bold text-blue-800 bg-rose-300 py-3 px-6 rounded-full shadow-md hover:bg-rose-400 transition duration-300 transform hover:scale-105">
+                            ❓ Preguntas
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#comparativa-educacion" class="text-2xl font-bold text-blue-800 bg-teal-300 py-3 px-6 rounded-full shadow-md hover:bg-teal-400 transition duration-300 transform hover:scale-105">
+                            🏫 Escuelas
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#metodologia-sole" class="text-2xl font-bold text-blue-800 bg-orange-300 py-3 px-6 rounded-full shadow-md hover:bg-orange-400 transition duration-300 transform hover:scale-105">
+                            💡 Método SOLE
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#ra-rv" class="text-2xl font-bold text-blue-800 bg-purple-300 py-3 px-6 rounded-full shadow-md hover:bg-purple-400 transition duration-300 transform hover:scale-105">
+                            👓 Realidad Mágica
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#merge-cube" class="text-2xl font-bold text-blue-800 bg-amber-300 py-3 px-6 rounded-full shadow-md hover:bg-amber-400 transition duration-300 transform hover:scale-105">
+                            🧊 Cubo Mágico
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#educacion-hibrida" class="text-2xl font-bold text-blue-800 bg-lime-300 py-3 px-6 rounded-full shadow-md hover:bg-lime-400 transition duration-300 transform hover:scale-105">
+                            🌟 Aprender Combinado
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#memory-game-4x4-section" class="text-2xl font-bold text-blue-800 bg-red-300 py-3 px-6 rounded-full shadow-md hover:bg-red-400 transition duration-300 transform hover:scale-105">
+                            🧠 ¡Memorama!
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#vr-activity-section" class="text-2xl font-bold text-blue-800 bg-cyan-400 py-3 px-6 rounded-full shadow-md hover:bg-cyan-500 transition duration-300 transform hover:scale-105">
+                            🌱 VR Jardín
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#my-podcast-section" class="text-2xl font-bold text-blue-800 bg-orange-400 py-3 px-6 rounded-full shadow-md hover:bg-orange-500 transition duration-300 transform hover:scale-105">
+                            🎧 Mi Podcast
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#teacher-planning-section" class="text-2xl font-bold text-blue-800 bg-green-400 py-3 px-6 rounded-full shadow-md hover:bg-green-500 transition duration-300 transform hover:scale-105">
+                            📝 Plan Docente
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section id="home" class="relative bg-gradient-to-br from-blue-300 to-purple-400 text-white py-20 md:py-28 flex items-center justify-center min-h-screen border-b-8 border-purple-500">
+            <div class="container mx-auto text-center px-4">
+                <img src="niños.png" alt="" class="w-full max-w-2xl mx-auto mb-8 rounded-3xl shadow-xl border-4 border-white transform rotate-2 hover:rotate-0 transition duration-500">
+                <h1 class="text-5xl md:text-6xl font-extrabold leading-tight mb-6 text-yellow-100 text-shadow-md">
+                    ¡Bienvenidos a Nuestro Mundo de Diversión!
+                </h1>
+                <p class="text-2xl md:text-3xl mb-10 max-w-3xl mx-auto text-yellow-50">
+                    Aquí aprenderemos, jugaremos y cantaremos sin parar. ¡Prepárate para la aventura!
+                </p>
+                <a href="#memory-game-4x4-section" class="inline-block bg-pink-500 text-white font-bold py-4 px-10 rounded-full text-3xl hover:bg-pink-600 transition duration-300 transform hover:scale-110 shadow-lg border-4 border-pink-400">
+                    ¡Vamos a Jugar al Memorama! 🥳
+                </a>
+            </div>
+        </section>
+
+        <section id="about" class="py-16 md:py-24 bg-white border-b-8 border-green-300">
+            <div class="container mx-auto px-4 max-w-4xl text-center">
+                <h2 class="text-4xl sm:text-5xl font-extrabold text-green-700 mb-12">👋 Conoce a Nuestros Amigos</h2>
+                <div class="md:flex md:items-center md:space-x-8 flex-col-reverse md:flex-row">
+                    <div class="md:w-1/2 text-left mb-8 md:mb-0">
+                        <p class="text-xl leading-relaxed mb-6 text-gray-700">
+                            Somos un equipo de profes súper divertidos que aman enseñar y jugar. ¡Aquí todos somos amigos! Queremos que cada día sea una nueva aventura para ti.
+                        </p>
+                        <p class="text-xl leading-relaxed text-gray-700">
+                            Nuestra misión es que aprendas muchas cosas nuevas mientras te ríes a carcajadas. ¡La diversión nunca termina!
+                        </p>
+                    </div>
+                    <div class="md:w-1/2 mb-8 md:mb-0">
+                        <img src="profesora.jpg" alt="" class="rounded-3xl shadow-xl w-full border-4 border-green-400 transform -rotate-2 hover:rotate-0 transition duration-500">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="eva" class="py-16 md:py-24 bg-emerald-100 border-b-8 border-emerald-500">
+            <div class="container mx-auto px-4 max-w-4xl text-center">
+                <h2 class="text-4xl sm:text-5xl font-extrabold text-blue-700 mb-12">💻 ¿Qué es un EVA? ¡Nuestra Aula Mágica Digital!</h2>
+                <div class="bg-white rounded-3xl shadow-xl p-8 border-4 border-emerald-300">
+                    <div class="flex flex-col md:flex-row items-center justify-center md:space-x-8">
+                        <div class="md:w-1/2 mb-8 md:mb-0">
+                            <img src="game.jpg" alt="" class="rounded-3xl shadow-lg w-full border-4 border-emerald-400 transform -rotate-3 hover:rotate-0 transition duration-500">
+                        </div>
+                        <div class="md:w-1/2 text-left">
+                            <h3 class="text-3xl font-bold text-purple-700 mb-4">¡Imagina una escuela en tu tablet o compu! 🖥️📱</h3>
+                            <p class="text-xl leading-relaxed mb-6 text-gray-700">
+                                Un **EVA** es como un **jardín de juegos gigante en el internet**, diseñado especialmente para que tú aprendas y te diviertas un montón. Es un **Entorno Virtual de Aprendizaje**, ¡pero a nosotros nos gusta llamarlo nuestra **Aula Mágica Digital**!
+                            </p>
+                            <p class="text-xl leading-relaxed mb-6 text-gray-700">
+                                Aquí podrás encontrar:
+                            </p>
+                            <ul class="text-xl leading-relaxed text-gray-700 list-disc list-inside text-left">
+                                <li>🎮 **Juegos educativos:** ¡Para que las letras y los números sean pura diversión!</li>
+                                <li>🎬 **Videos con cuentos y canciones:** ¡Historias increíbles y melodías pegadizas!</li>
+                                <li>🎨 **Actividades interactivas:** Para pintar, dibujar y crear con tus propias manitas virtuales.</li>
+                                <li>👫 **Amigos:** A veces, también podemos aprender y jugar con otros niños.</li>
+                            </ul>
+                            <p class="text-xl leading-relaxed text-gray-700 mt-6">
+                                Todo esto está guardado en la computadora para que puedas jugar y aprender ¡cuando quieras y donde quieras! Es seguro y siempre está listo para tu próxima aventura de aprendizaje.
+                            </p>
+                            <button class="bg-pink-500 text-white font-bold py-3 px-8 rounded-full text-xl hover:bg-pink-600 transition duration-300 transform hover:scale-105 shadow-md border-2 border-pink-400 mt-6" onclick="playChildSound()">
+                                ¡Vamos a Explorar! ✨
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="cultura-digital" class="py-16 md:py-24 bg-cyan-100 border-b-8 border-cyan-500">
+            <div class="container mx-auto px-4 max-w-4xl text-center">
+                <h2 class="text-4xl sm:text-5xl font-extrabold text-indigo-700 mb-12">🌐 Nuestra Cultura Digital: ¡Juega y Aprende Seguro!</h2>
+                <div class="bg-white rounded-3xl shadow-xl p-8 border-4 border-cyan-300">
+                    <div class="flex flex-col md:flex-row items-center justify-center md:space-x-8">
+                        <div class="md:w-1/2 mb-8 md:mb-0">
+                            <img src="online.jpg" alt="" class="rounded-3xl shadow-lg w-full border-4 border-cyan-400 transform rotate-3 hover:rotate-0 transition duration-500">
+                        </div>
+                        <div class="md:w-1/2 text-left">
+                            <h3 class="text-3xl font-bold text-purple-700 mb-4">¡El mundo de la tecnología es genial! 🚀</h3>
+                            <p class="text-xl leading-relaxed mb-6 text-gray-700">
+                                La **Cultura Digital** es todo lo que hacemos cuando usamos tablets, celulares, computadoras o cualquier aparato que se conecta al internet. Es como aprendemos, jugamos, dibujamos y nos comunicamos con la ayuda de la tecnología.
+                            </p>
+                            <p class="text-xl leading-relaxed mb-6 text-gray-700">
+                                En este mundo digital, es importante:
+                            </p>
+                            <ul class="text-xl leading-relaxed text-gray-700 list-disc list-inside text-left">
+                                <li>✨ **Crear:** ¡No solo ver, sino también dibujar, hacer música o inventar historias!</li>
+                                <li>👨‍👩‍👧‍👦 **Compartir con Cuidado:** Siempre pedir permiso a mamá o papá antes de compartir algo.</li>
+                                <li>🔒 **Estar Seguro:** Si algo te parece raro o te da miedo, ¡cuéntale a un adulto de inmediato!</li>
+                                <li>⏰ **Jugar con Tiempo:** Es divertido, pero también hay que jugar afuera y leer libros.</li>
+                            </ul>
+                            <button class="bg-pink-500 text-white font-bold py-3 px-8 rounded-full text-xl hover:bg-pink-600 transition duration-300 transform hover:scale-105 shadow-md border-2 border-pink-400 mt-6" onclick="playChildSound()">
+                                ¡Aprender más!💡
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="preguntas" class="py-16 md:py-24 bg-rose-100 border-b-8 border-rose-500">
+            <div class="container mx-auto px-4 max-w-4xl text-center">
+                <h2 class="text-4xl sm:text-5xl font-extrabold text-purple-700 mb-12">❓ ¡Preguntas del Mundo Digital!</h2>
+                <p class="text-xl leading-relaxed mb-8 text-gray-700">
+                    ¿Tienes curiosidad? ¡Toca las preguntas para descubrir sus respuestas secretas!
+                </p>
+
+                <div class="space-y-4">
+                    <div class="accordion-item bg-white rounded-3xl shadow-lg border-4 border-rose-300 overflow-hidden">
+                        <button class="accordion-button">
+                            <span>1. ¿Por qué el mundo digital es importante para los estudiantes como tú?</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="text-xl leading-relaxed">
+                                ¡Porque te ayuda a aprender muchísimas cosas nuevas! Puedes ver videos educativos, jugar juegos que te enseñan y hablar con tus profes. ¡Es como tener una biblioteca y un salón de juegos en tus manos!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item bg-white rounded-3xl shadow-lg border-4 border-rose-300 overflow-hidden">
+                        <button class="accordion-button">
+                            <span>2. ¿Cómo es el mundo digital? (Características)</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="text-xl leading-relaxed">
+                                Es un lugar donde todo está conectado. Puedes ver cosas de lejos, hablar con amigos aunque estén lejos y encontrar información muy rápido. ¡Siempre está cambiando y creciendo!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item bg-white rounded-3xl shadow-lg border-4 border-rose-300 overflow-hidden">
+                        <button class="accordion-button">
+                            <span>3. ¿El mundo digital influye en tu vida diaria? ¿Cómo?</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="text-xl leading-relaxed">
+                                ¡Sí! Cuando ves tus caricaturas favoritas en la tablet, hablas con tus abuelitos por videollamada o juegas un juego educativo, ¡estás usando el mundo digital en tu día a día! También te ayuda a descubrir cosas nuevas.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item bg-white rounded-3xl shadow-lg border-4 border-rose-300 overflow-hidden">
+                        <button class="accordion-button">
+                            <span>4. ¿Por qué es importante el mundo digital para aprender en la escuela?</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="text-xl leading-relaxed">
+                                ¡Porque hace el aprendizaje más divertido y fácil! Puedes ver videos que te explican las cosas, hacer actividades interactivas y hasta investigar tus temas favoritos con ayuda de los profes. ¡Aprender es una aventura digital!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item bg-white rounded-3xl shadow-lg border-4 border-rose-300 overflow-hidden">
+                        <button class="accordion-button">
+                            <span>5. ¿Qué cosas buenas y no tan buenas tiene el mundo digital? (Ventajas y desventajas)</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="text-xl leading-relaxed">
+                                **¡Cosas buenas!** ✨ Puedes aprender, jugar, ver cuentos y hablar con gente que está lejos. <br>
+                                **¡Cosas no tan buenas!** 🛑 A veces hay cosas que no son para niños, o podemos pasar mucho tiempo pegados a la pantalla. Por eso, ¡siempre debe haber un adulto cerca y hay que jugar un poquito de todo!
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item bg-white rounded-3xl shadow-lg border-4 border-rose-300 overflow-hidden">
+                        <button class="accordion-button">
+                            <span>6. ¿Cómo hablamos con otros de nuevas formas gracias al mundo digital?</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="text-xl leading-relaxed">
+                                ¡Ahora podemos hacer videollamadas para ver a la abuela aunque esté lejos! O mandar dibujitos a los amigos. Las computadoras y tablets nos ayudan a estar conectados con gente de todo el mundo. ¡Es como magia!
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="comparativa-educacion" class="py-16 md:py-24 bg-teal-100 border-b-8 border-teal-500">
+            <div class="container mx-auto px-4 max-w-4xl text-center">
+                <h2 class="text-4xl sm:text-5xl font-extrabold text-emerald-700 mb-12">🏫 Escuela en Casa vs. Escuela en el Salón</h2>
+                <p class="text-xl leading-relaxed mb-8 text-gray-700">
+                    ¡Ambas son muy buenas para aprender! Mira sus diferencias para saber cuál te gusta más.
+                </p>
+
+                <div class="bg-white rounded-3xl shadow-xl p-8 border-4 border-teal-300 grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="p-6 bg-pink-50 rounded-2xl border-2 border-pink-300 flex flex-col items-center">
+                        <h3 class="text-3xl font-bold text-red-700 mb-4">Escuela en el Salón 👩‍🏫</h3>
+                        <img src="aula1.jpg" alt="" class="rounded-xl shadow-md mb-4 w-full max-w-[200px]">
+                        <ul class="text-lg leading-relaxed text-gray-700 list-disc list-inside text-left w-full space-y-2">
+                            <li class="text-green-700 font-semibold">✅ **Ventajas:**</li>
+                            <ul class="list-none pl-4 space-y-1">
+                                <li>✨ Haces amigos y juegas en persona.</li>
+                                <li>✨ Los profes te ayudan al instante.</li>
+                                <li>✨ Hay muchas actividades divertidas en grupo.</li>
+                            </ul>
+                            <li class="text-red-700 font-semibold mt-4">❌ **Desventajas:**</li>
+                            <ul class="list-none pl-4 space-y-1">
+                                <li>🛑 Tienes que ir a un lugar específico.</li>
+                                <li>🛑 Hay horarios fijos que no cambian.</li>
+                                <li>🛑 A veces hay más ruido y distracciones.</li>
+                            </ul>
+                        </ul>
+                    </div>
+
+                    <div class="p-6 bg-blue-50 rounded-2xl border-2 border-blue-300 flex flex-col items-center">
+                        <h3 class="text-3xl font-bold text-purple-700 mb-4">Escuela en Casa 💻</h3>
+                        <img src="aula2.jpg" alt="" class="rounded-xl shadow-md mb-4 w-full max-w-[200px]">
+                        <ul class="text-lg leading-relaxed text-gray-700 list-disc list-inside text-left w-full space-y-2">
+                            <li class="text-green-700 font-semibold">✅ **Ventajas:**</li>
+                            <ul class="list-none pl-4 space-y-1">
+                                <li>✨ Aprendes desde tu casita, muy cómodo.</li>
+                                <li>✨ Puedes ir a tu propio ritmo.</li>
+                                <li>✨ Usas juegos y videos interactivos.</li>
+                            </ul>
+                            <li class="text-red-700 font-semibold mt-4">❌ **Desventajas:**</li>
+                            <ul class="list-none pl-4 space-y-1">
+                                <li>🛑 A veces extrañas jugar con tus amigos en persona.</li>
+                                <li>🛑 Necesitas que un adulto te ayude con la computadora.</li>
+                                <li>🛑 Puede ser fácil distraerse en casa.</li>
+                            </ul>
+                        </ul>
+                    </div>
+                </div>
+                <p class="text-xl leading-relaxed text-gray-700 mt-8">
+                    ¡Lo importante es siempre aprender y divertirse, no importa dónde! ✨
+                </p>
+            </div>
+        </section>
+
+        <section id="metodologia-sole" class="py-16 md:py-24 bg-orange-100 border-b-8 border-orange-500">
+            <div class="container mx-auto px-4 max-w-4xl text-center">
+                <h2 class="text-4xl sm:text-5xl font-extrabold text-red-700 mb-12">💡 ¿Qué es la Metodología SOLE? ¡Aprende Explorando!</h2>
+                <div class="bg-white rounded-3xl shadow-xl p-8 border-4 border-orange-300">
+                    <div class="flex flex-col md:flex-row items-center justify-center md:space-x-8">
+                        <div class="md:w-1/2 mb-8 md:mb-0">
+                            <img src="descubrir.jpg" alt="" class="rounded-3xl shadow-lg w-full border-4 border-orange-400 transform -rotate-3 hover:rotate-0 transition duration-500">
+                        </div>
+                        <div class="md:w-1/2 text-left">
+                            <h3 class="text-3xl font-bold text-purple-700 mb-4">¡Aprender preguntando y descubriendo! 🧐</h3>
+                            <p class="text-xl leading-relaxed mb-6 text-gray-700">
+                                La **Metodología SOLE** es una forma muy especial y divertida de aprender. Imagina que tienes una pregunta súper interesante, ¡y en lugar de que el profe te dé la respuesta, la buscas tú mismo!
+                            </p>
+                            <p class="text-xl leading-relaxed mb-6 text-gray-700">
+                                Así funciona:
+                            </p>
+                            <ul class="text-xl leading-relaxed text-gray-700 list-disc list-inside text-left">
+                                <li>❓ **Gran Pregunta:** El profe te hace una pregunta que te da mucha curiosidad, ¡como si hay vida en otros planetas!</li>
+                                <li>🕵️‍♀️ **A Investigar:** Con tu tablet o computadora y tus amigos, ¡buscan las respuestas en el internet! El profe solo observa y ayuda si es necesario.</li>
+                                <li>🗣️ **A Contar:** Después, cada grupo comparte lo que descubrió con todos los demás. ¡Así aprenden juntos!</li>
+                            </ul>
+                            <p class="text-xl leading-relaxed text-gray-700 mt-6">
+                                ¡Es una aventura de aprendizaje donde tú eres el explorador principal! Te ayuda a ser muy curioso y a encontrar las respuestas por ti mismo.
+                            </p>
+                            <button class="bg-pink-500 text-white font-bold py-3 px-8 rounded-full text-xl hover:bg-pink-600 transition duration-300 transform hover:scale-105 shadow-md border-2 border-pink-400 mt-6" onclick="playChildSound()">
+                                ¡Quiero Preguntar! 🌟
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ra-rv" class="py-16 md:py-24 bg-purple-100 border-b-8 border-purple-500">
+            <div class="container mx-auto px-4 max-w-4xl text-center">
+                <h2 class="text-4xl sm:text-5xl font-extrabold text-blue-700 mb-12">👓 ¡Realidad Mágica! ¿Qué son RA y RV?</h2>
+                <p class="text-xl leading-relaxed mb-8 text-gray-700">
+                    ¡Descubre cómo la tecnología nos muestra cosas increíbles de nuevas maneras!
+                </p>
+
+                <div class="space-y-4">
+                    <div class="accordion-item bg-white rounded-3xl shadow-lg border-4 border-purple-300 overflow-hidden">
+                        <button class="accordion-button">
+                            <span>1. ¿Qué es la Realidad Aumentada (RA)?</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="text-xl leading-relaxed">
+                                ¡Imagina que estás viendo tu sala y, de repente, aparece un dinosaurio virtual junto a tu sofá! 🦕 La **Realidad Aumentada** es cuando tu tablet o celular usa su cámara para poner dibujos o cosas virtuales en el mundo real, como si estuvieran ahí.
+                            </p>
+                            <img src="dino.jpg" alt="" class="rounded-xl shadow-md mt-4 mx-auto">
+                            <p class="text-sm text-gray-500 mt-2">Tecnología necesaria: un celular o tablet con cámara especial.</p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item bg-white rounded-3xl shadow-lg border-4 border-purple-300 overflow-hidden">
+                        <button class="accordion-button">
+                            <span>2. ¿Qué es la Realidad Virtual (RV)?</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="text-xl leading-relaxed">
+                                ¡Ponte unas gafas especiales y, de repente, estás en otro mundo! 🌌 La **Realidad Virtual** te lleva a un lugar completamente diferente, que solo existe en la computadora. Puedes estar en la Luna, en el fondo del mar o dentro de un videojuego. ¡Es como si de verdad estuvieras ahí!
+                            </p>
+                            <img src="uni.jpg" alt="" class="rounded-xl shadow-md mt-4 mx-auto">
+                            <p class="text-sm text-gray-500 mt-2">Tecnología necesaria: unas gafas de Realidad Virtual.</p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item bg-white rounded-3xl shadow-lg border-4 border-purple-300 overflow-hidden">
+                        <button class="accordion-button">
+                            <span>3. ¿Cuál es la diferencia entre RA y RV?</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="text-xl leading-relaxed">
+                                La **RA** (Aumentada) mezcla el mundo real con cosas virtuales, ¡vemos los dos al mismo tiempo! Como si un personaje de un juego apareciera en tu sala.
+                            </p>
+                            <p class="text-xl leading-relaxed mt-4">
+                                La **RV** (Virtual) te lleva a un mundo totalmente creado por la computadora, ¡solo ves lo que las gafas te muestran! Es como transportarte a otro lugar sin moverte de tu silla.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item bg-white rounded-3xl shadow-lg border-4 border-purple-300 overflow-hidden">
+                        <button class="accordion-button">
+                            <span>4. ¿Cómo funciona la RA y qué necesitas?</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="text-xl leading-relaxed">
+                                La RA funciona con la cámara de tu celular o tablet. La cámara ve el mundo real, y el aparato pone dibujos digitales encima. ¡Es como un filtro mágico!
+                            </p>
+                            <p class="text-xl leading-relaxed mt-4">
+                                **Necesitas:** 📱 Un **celular o tablet** con cámara, y una **aplicación especial** que haga la magia.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item bg-white rounded-3xl shadow-lg border-4 border-purple-300 overflow-hidden">
+                        <button class="accordion-button">
+                            <span>5. ¿Cómo funciona la RV y qué necesitas?</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right"><polyline points="9 18 15 12 9 6"/></svg>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="text-xl leading-relaxed">
+                                La RV funciona con unas **gafas especiales** que cubren tus ojos. Dentro de las gafas hay pantallas que te muestran un mundo hecho por la computadora, ¡así crees que estás ahí!
+                            </p>
+                            <p class="text-xl leading-relaxed mt-4">
+                                **Necesitas:** 👓 Unas **gafas de Realidad Virtual** (a veces se usa también una computadora o un celular con ellas) y un **juego o video especial** para RV.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="merge-cube" class="py-16 md:py-24 bg-amber-100 border-b-8 border-amber-500">
+            <div class="container mx-auto px-4 max-w-4xl text-center">
+                <h2 class="text-4xl sm:text-5xl font-extrabold text-orange-700 mb-12">🧊 ¡Explora el Cubo Mágico! (Simulación de RA)</h2>
+                <p class="text-xl leading-relaxed mb-6 text-gray-700">
+                        Imagina que este cubo es el "Merge Cube". Usa tu ratón para girarlo y haz clic en los botones para ver cómo se transforma y muestra cosas mágicas. ¡Es como la Realidad Aumentada en tus manos!
+                    </p>
+                    <div id="mergeCubeContainer" class="w-full flex justify-center items-center mb-6">
+                        <canvas id="mergeCubeCanvas" class="w-full max-w-md aspect-square"></canvas>
+                    </div>
+                    <div class="flex flex-wrap justify-center gap-4 mt-6">
+                        <button id="showApple" class="bg-red-500 text-white font-bold py-3 px-6 rounded-full text-xl hover:bg-red-600 transition duration-300 transform hover:scale-105 shadow-md">
+                            🍎 Mostrar Manzana
+                        </button>
+                        <button id="showFlower" class="bg-pink-500 text-white font-bold py-3 px-6 rounded-full text-xl hover:bg-pink-600 transition duration-300 transform hover:scale-105 shadow-md">
+                            🌸 Mostrar Flor
+                        </button>
+                        <button id="showCaterpillar" class="bg-green-500 text-white font-bold py-3 px-6 rounded-full text-xl hover:bg-green-600 transition duration-300 transform hover:scale-105 shadow-md">
+                            🐛 Mostrar Gusanito
+                        </button>
+                        <button id="clearCube" class="bg-gray-400 text-white font-bold py-3 px-6 rounded-full text-xl hover:bg-gray-500 transition duration-300 transform hover:scale-105 shadow-md">
+                            ✨ Limpiar Cubo
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+        <section id="educacion-hibrida" class="py-16 md:py-24 bg-lime-100 border-b-8 border-lime-500">
+            <div class="container mx-auto px-4 max-w-4xl text-center">
+                <h2 class="text-4xl sm:text-5xl font-extrabold text-green-800 mb-12">🌟 Educación Híbrida: ¡Aprender de las Dos Maneras!</h2>
+                <div class="bg-white rounded-3xl shadow-xl p-8 border-4 border-lime-300">
+                    <div class="flex flex-col md:flex-row items-center justify-center md:space-x-8">
+                        <div class="md:w-1/2 mb-8 md:mb-0">
+                            <img src="hibrido.png" alt="" class="rounded-3xl shadow-lg w-full border-4 border-lime-400 transform rotate-3 hover:rotate-0 transition duration-500">
+                        </div>
+                        <div class="md:w-1/2 text-left">
+                            <h3 class="text-3xl font-bold text-purple-700 mb-4">¡La mejor mezcla de la escuela y el hogar! 🏫🏠</h3>
+                            <p class="text-xl leading-relaxed mb-6 text-gray-700">
+                                La **Educación Híbrida** es como tener lo mejor de dos mundos: a veces vas a la escuela para jugar y aprender con tus amigos y profes en persona, ¡y otras veces aprendes desde tu casa con tu computadora o tablet!
+                            </p>
+                            <p class="text-xl leading-relaxed mb-6 text-gray-700">
+                                Así, puedes:
+                            </p>
+                            <ul class="text-xl leading-relaxed text-gray-700 list-disc list-inside text-left">
+                                <li>👩‍🏫 **Ir al Salón:** Para ver a tus amigos, correr en el patio y hacer actividades con los profes en la escuela.</li>
+                                <li>💻 **Aprender en Casa:** Para ver videos, jugar juegos educativos en tu tablet y aprender a tu propio ritmo.</li>
+                                <li>🤝 **Conectar:** Estar siempre cerca de tus profes y compañeros, ¡no importa dónde estés!</li>
+                            </ul>
+                            <p class="text-xl leading-relaxed text-gray-700 mt-6">
+                                ¡Es una forma muy flexible y divertida de seguir aprendiendo un montón cada día!
+                            </p>
+                            <button class="bg-pink-500 text-white font-bold py-3 px-8 rounded-full text-xl hover:bg-pink-600 transition duration-300 transform hover:scale-105 shadow-md border-2 border-pink-400 mt-6" onclick="playChildSound()">
+                                ¡Explorar Juntos! 🚀
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="memory-game-4x4-section" class="py-16 md:py-24 bg-pink-100 border-b-8 border-purple-300">
+            <div class="container mx-auto px-4 text-center">
+                <h2 class="text-4xl sm:text-5xl font-extrabold text-purple-700 mb-12">🧠 ¡Juega al Memorama de Jardín! ($4 \times 4$)</h2>
+                <p class="text-xl leading-relaxed mb-10 text-gray-700">
+                    ¡Encuentra los pares de animales, flores y plantas del jardín para ganar! ¡Pon a prueba tu memoria y diviértete!
+                </p>
+
+                <div id="memoryGame4x4Section" class="bg-white rounded-3xl shadow-xl p-8 border-4 border-purple-300">
+                    <div id="memoryGame4x4Grid">
+                    </div>
+                    <p id="memoryGame4x4Message" class="text-xl font-bold mt-4 text-purple-700">¡Encuentra los pares! 🌱</p>
+                    <button id="memory4x4RestartBtn" class="game-button">Reiniciar Juego</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="vr-activity-section" class="py-16 md:py-24 bg-blue-100 border-b-8 border-blue-500">
+            <div class="container mx-auto px-4 max-w-4xl text-center">
+                <h2 class="text-4xl sm:text-5xl font-extrabold text-blue-700 mb-12">🌳 Aventura en el Jardín Virtual: Un Viaje Inmersivo</h2>
+                
+                <div class="bg-white rounded-3xl shadow-xl p-8 border-4 border-blue-300">
+                    <h3 class="text-3xl font-bold text-indigo-700 mb-4">1. Descripción de la Actividad</h3>
+                    <p class="text-lg leading-relaxed mb-6 text-gray-700">
+                        Esta actividad didáctica sumergirá a los niños en un **Jardín Virtual interactivo** utilizando gafas de Realidad Virtual. Los estudiantes se convertirán en pequeños exploradores y podrán pasear libremente por un entorno natural digital lleno de vida.
+                    </p>
+                    <img src="jardin.jpg" alt="" class="w-full mx-auto my-6 rounded-3xl shadow-lg border-4 border-blue-400">
+                    <p class="text-lg leading-relaxed mb-6 text-gray-700">
+                        En este jardín virtual, los niños podrán:
+                    </p>
+                    <ul class="text-lg leading-relaxed text-gray-700 list-disc list-inside text-left mb-6">
+                        <li>**Observar y Descubrir:** Encontrarán diferentes tipos de animales (insectos, aves, pequeños mamíferos), una variedad de flores de distintos colores y tamaños, y diversas plantas y árboles.</li>
+                        <li>**Interacción Activa:** Al "mirar" (o enfocar con un cursor visual en RV) un animal, una flor o una planta específica, se activará una pequeña interacción:</li>
+                        <ul class="list-disc list-inside pl-8">
+                            <li>Aparecerá el nombre del elemento (ej. "Mariposa", "Girasol", "Roble").</li>
+                            <li>Se escuchará un sonido característico (canto de pájaro, zumbido de abeja).</li>
+                            <li>Una breve animación que muestre una característica (la mariposa revolotea, el girasol gira hacia el sol).</li>
+                            <li>Opcionalmente, se podría escuchar un dato curioso simple sobre ese elemento.</li>
+                        </ul>
+                        <li>**Exploración Guiada y Libre:** Inicialmente, el docente podría guiar el recorrido para asegurar que todos vean los elementos clave. Luego, se permitiría la exploración libre, animando a los niños a descubrir nuevos elementos y a interaccionar con ellos.</li>
+                    </ul>
+
+                    <h3 class="section-title">2. Objetivos de Aprendizaje</h3>
+                    <ul class="text-lg leading-relaxed text-gray-700 list-disc list-inside text-left mb-6">
+                        <li>**Objetivos de Conocimiento:**
+                            <ul class="list-disc list-inside pl-8">
+                                <li>Identificar y nombrar al menos 5 tipos diferentes de animales, 5 flores y 3 plantas/árboles presentes en el jardín virtual.</li>
+                                <li>Reconocer algunos sonidos asociados con los animales del jardín.</li>
+                                <li>Comprender la diversidad de la vida en un ecosistema de jardín.</li>
+                            </ul>
+                        </li>
+                        <li>**Objetivos de Habilidades:**
+                            <ul class="list-disc list-inside pl-8">
+                                <li>Desarrollar habilidades de observación y atención a los detalles.</li>
+                                <li>Mejorar la orientación espacial y la navegación en un entorno 3D.</li>
+                                <li>Fomentar la curiosidad y la iniciativa en el aprendizaje a través de la exploración.</li>
+                                <li>Desarrollar la alfabetización digital básica a través de la interacción con la tecnología de RV.</li>
+                            </ul>
+                        </li>
+                        <li>**Objetivos de Actitudes:**
+                            <ul class="list-disc list-inside pl-8">
+                                <li>Fomentar el respeto y la apreciación por la naturaleza y los seres vivos.</li>
+                                <li>Desarrollar una actitud positiva hacia el aprendizaje interactivo y las nuevas tecnologías.</li>
+                                <li>Estimular el trabajo en equipo y la comunicación al compartir descubrimientos.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h3 class="section-title">3. Implementación de la Actividad</h3>
+                    <h4 class="text-xl font-semibold text-gray-800 mb-2">3.1. Materiales Necesarios</h4>
+                    <ul class="text-lg leading-relaxed text-gray-700 list-disc list-inside text-left mb-6">
+                        <li>**Gafas de Realidad Virtual:** Se pueden usar desde soluciones económicas como Google Cardboard (con smartphones compatibles) hasta dispositivos más avanzados como Oculus Go/Quest si se cuenta con el presupuesto. Para un aula, Cardboard con smartphones sería una opción accesible.</li>
+                        <li>**Smartphones/Tablets:** Si se usa Cardboard, se necesitarán dispositivos móviles con la aplicación del jardín virtual instalada.</li>
+                        <li>**Aplicación de Jardín Virtual:** Una app de RV educativa que simule un jardín interactivo. Podría ser una aplicación preexistente o una desarrollada específicamente para la actividad.</li>
+                        <li>**Espacio Seguro y Tranquilo:** Un área en el aula o un espacio común donde los niños puedan usar las gafas sin riesgo de tropezar o golpearse, preferiblemente sentados.</li>
+                        <li>**Auriculares (opcional pero recomendado):** Para una experiencia más inmersiva y para minimizar distracciones.</li>
+                        <li>**Material para la Post-Actividad:** Hojas de dibujo, lápices de colores, plastilina, etc.</li>
+                    </ul>
+
+                    <h4 class="text-xl font-semibold text-gray-800 mb-2">3.2. Desarrollo de la Actividad</h4>
+                    <ul class="text-lg leading-relaxed text-gray-700 list-decimal list-inside text-left mb-6">
+                        <li>**Introducción y Preparación (10 minutos):**
+                            <ul class="list-disc list-inside pl-8">
+                                <li>**Explicación de la RV:** El docente introduce qué es la Realidad Virtual de forma sencilla ("¡Es como si te transportaras a otro lugar sin moverte de aquí!").</li>
+                                <li>**Normas de Seguridad:** Establecer reglas claras: no correr con las gafas puestas, sentarse quietos, levantar la mano si sienten mareo o necesitan ayuda.</li>
+                                <li>**Objetivo de la Misión:** Explicar que la misión es explorar un jardín virtual y descubrir sus secretos.</li>
+                                <li>**Colocación de Gafas:** Ayudar a cada niño a colocarse las gafas y los auriculares (si se usan).</li>
+                            </ul>
+                        </li>
+                        <li>**Fase de Exploración Guiada (15 minutos):**
+                            <ul class="list-disc list-inside pl-8">
+                                <li>El docente inicia la aplicación en cada dispositivo.</li>
+                                <li>Inicialmente, el docente puede dar instrucciones verbales generales ("Ahora miren hacia adelante, ¿qué ven?", "Busquen una flor roja"). Esto ayuda a los niños a familiarizarse con la navegación y la interacción.</li>
+                                <li>Observar a los niños y brindar asistencia individual cuando sea necesario.</li>
+                            </ul>
+                        </li>
+                        <li>**Fase de Exploración Libre (15 minutos):**
+                            <ul class="list-disc list-inside pl-8">
+                                <li>Permitir que los niños exploren el jardín a su propio ritmo, animándolos a interactuar con diferentes elementos.</li>
+                                <li>Circular por el aula, observando los descubrimientos de los niños y haciendo preguntas que estimulen la conversación ("¿Qué encontraste?", "¿Escuchaste ese sonido?").</li>
+                            </ul>
+                        </li>
+                        <li>**Post-Actividad y Reflexión (20 minutos):**
+                            <ul class="list-disc list-inside pl-8">
+                                <li>**Retiro de Gafas:** Ayudar a los niños a quitarse las gafas de RV de forma segura.</li>
+                                <li>**Puesta en Común:** Abrir un espacio para que los niños compartan sus experiencias:
+                                    <ul class="list-disc list-inside pl-8">
+                                        <li>"¿Qué animales o plantas vieron que les gustaron más?"</li>
+                                        <li>"¿Qué sonidos escucharon?"</li>
+                                        <li>"¿Aprendieron algo nuevo?"</li>
+                                    </ul>
+                                </li>
+                                <li>**Actividad Creativa:** Pedir a los niños que dibujen lo que más les gustó del jardín virtual o que modelen un animal o flor con plastilina.</li>
+                                <li>**Conexión con el Mundo Real:** Relacionar lo visto en la RV con jardines reales que conozcan o con la naturaleza cercana. Hablar sobre la importancia de cuidar las plantas y los animales.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h4 class="text-xl font-semibold text-gray-800 mb-2">3.3. Adaptaciones y Diferenciación</h4>
+                    <ul class="text-lg leading-relaxed text-gray-700 list-disc list-inside text-left">
+                        <li>**Para niños más pequeños (Preescolar):** Simplificar las interacciones, enfocarse más en la observación visual y los sonidos. Las sesiones de RV deben ser más cortas.</li>
+                        <li>**Para niños mayores (Primer Ciclo Primaria):** Añadir más datos curiosos al interactuar con los elementos. Incluir una "lista de búsqueda" de elementos específicos para encontrar. Fomentar la escritura de lo que aprendieron.</li>
+                        <li>**Para necesidades educativas especiales:** Brindar apoyo individualizado, permitir más tiempo de adaptación a la RV, y ajustar los objetivos según las capacidades de cada niño. Asegurarse de que el entorno RV sea accesible y no genere sobrecarga sensorial.</li>
+                    </ul>
+                    <p class="text-lg leading-relaxed text-gray-700 mt-6">
+                        Esta actividad no solo introduce a los niños a la tecnología de Realidad Virtual de una manera segura y controlada, sino que también enriquece su aprendizaje sobre la naturaleza de una forma inolvidable y multisensorial.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section id="my-podcast-section" class="py-16 md:py-24 bg-orange-100 border-b-8 border-amber-500">
+            <div class="container mx-auto px-4 max-w-4xl text-center">
+                <h2 class="text-4xl sm:text-5xl font-extrabold text-orange-700 mb-12">🎧 ¡Mi Podcast de Aventuras!</h2>
+                <p class="text-xl leading-relaxed mb-10 text-gray-700">
+                    ¡Bienvenidos a nuestro rincón de historias y sonidos mágicos! Aquí podrás escuchar cuentos, canciones divertidas y aprender cosas increíbles mientras exploramos el mundo juntos. ¡Sube el volumen y prepárate para la aventura auditiva!
+                </p>
+                <audio controls class="w-full max-w-lg mx-auto rounded-xl shadow-lg border-4 border-amber-300">
+                    <source src="Podcast.mp3" type="audio/mp3">
+                    Tu navegador no soporta el elemento de audio.
+                </audio>
+                <p class="text-lg leading-relaxed text-gray-600 mt-4">
+                    Esperamos que disfrutes de este pequeño adelanto. ¡Pronto tendremos muchas más historias para ti!
+                </p>
+            </div>
+        </section>
+        <section id="teacher-planning-section" class="py-28 md:py-24 bg-green-100 border-b-8 border-green-500">
+            <div class="container mx-auto px-8 max-w-4xl text-center">
+                <h2 class="text-4xl sm:text-5xl font-extrabold text-green-700 mb-12">📝 Planeación Docente: Herramientas para los Profes</h2>
+                <p class="text-xl leading-relaxed mb-10 text-gray-700">
+                    Aquí encontrarás un ejemplo de planificación para integrar actividades lúdicas y tecnológicas en el aula.
+                </p>
+
+                <div class="pdf-viewer-container">
+                  
+                    <iframe src="Planeacion.pdf" width="800" height="1000" >
+                        Tu navegador no soporta la visualización de PDFs. Por favor, descarga el documento para verlo: 
+                        <a href="Planeacion.pdf">Descargar PDF</a>
+                    </iframe>
+                </div>
+
+                <p class="text-lg leading-relaxed text-gray-700 mt-8">
+                    ¡Esperamos que esta herramienta te inspire a crear experiencias de aprendizaje mágicas para tus estudiantes!
+                </p>
+            </div>
+        </section>
+        
+
+
+    </main>
+
+    
+    <div id="messageBoxOverlay" class="message-box-overlay">
+        <div class="message-box">
+            <h3 id="messageBoxTitle">¡Mensaje!</h3>
+            <p id="messageBoxContent">Contenido del mensaje.</p>
+            <button id="messageBoxCloseBtn">¡Entendido!</button>
+        </div>
+    </div>
+
+    <footer class="bg-blue-600 text-white py-8">
+        <div class="container mx-auto text-center px-4">
+            <p class="text-xl">&copy; 2025 ¡Mi Mundo de Aventuras! ✨ Hecho con mucho cariño para ti.</p>
+            <div class="mt-4 space-x-4">
+                <a href="#" class="text-blue-200 hover:text-white transition duration-300 text-lg">Reglas de Uso</a>
+                <a href="#" class="text-blue-200 hover:text-white transition duration-300 text-lg">Sobre tu Privacidad</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</body>
+</html>
