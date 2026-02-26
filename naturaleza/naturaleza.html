@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Cuidemos la Naturaleza</title>
+
+<style>
+body{
+    font-family: Comic Sans MS, Arial;
+    background-color: #d0f5d8;
+    text-align: center;
+    margin: 0;
+}
+
+header{
+    background-color: #4CAF50;
+    color: white;
+    padding: 25px;
+}
+
+section{
+    background: white;
+    margin: 20px auto;
+    padding: 20px;
+    width: 85%;
+    max-width: 850px;
+    border-radius: 20px;
+}
+
+h2{
+    color: #2e7d32;
+}
+
+.memorama{
+    display: grid;
+    grid-template-columns: repeat(4, 80px);
+    gap: 12px;
+    justify-content: center;
+}
+
+.carta{
+    width: 80px;
+    height: 80px;
+    background-color: #81c784;
+    border-radius: 15px;
+    font-size: 35px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+table{
+    margin: auto;
+    border-collapse: collapse;
+}
+
+td{
+    width: 35px;
+    height: 35px;
+    border: 2px solid #4CAF50;
+    font-size: 18px;
+    cursor: pointer;
+    background-color: #e8f5e9;
+}
+
+.lista{
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.sonidos{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.sonido-btn{
+    background-color: #81c784;
+    border: none;
+    border-radius: 15px;
+    padding: 15px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.sonido-btn:hover{
+    background-color: #66bb6a;
+}
+
+footer{
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <h1>🌍 Cuidemos la Naturaleza 🌱</h1>
+    <p>Aprendamos a cuidarla jugando y escuchando</p>
+</header>
+
+<section>
+    <h2>💚 ¿Por qué es importante cuidar la naturaleza?</h2>
+    <p>
+        La naturaleza nos da aire 🌬️, agua 💧, plantas 🌳 y animales 🐦.
+        Gracias a ella podemos vivir, jugar y respirar.
+    </p>
+    <p>
+        Cuando cuidamos la naturaleza, ayudamos a que el planeta esté sano
+        y todos podamos disfrutarlo 🌎💚
+    </p>
+</section>
+
+<section>
+    <h2>🎧 Sonidos de la Naturaleza</h2>
+    <p>Escucha y relájate con los sonidos naturales</p>
+
+
+    <audio id="lluvia" src="audio4.mp3" controls></audio>
+    <audio id="viento" src="audio2.mp3" controls></audio>
+    <audio id="pajaros" src="audio3.mp3" controls></audio>
+    <audio id="insectos" src="audio1.mp3" controls></audio>
+    <audio id="hojas" src="audio5.mp3"controls></audio>
+</section>
+
+<section>
+    <h2>🧠 Memorama</h2>
+    <div class="memorama" id="memorama"></div>
+</section>
+
+<section>
+    <h2>🔎 Sopa de Letras</h2>
+    <p class="lista">
+        ARBOL · AGUA · SOL · TIERRA · AIRE · FLOR · BOSQUE · RIO
+    </p>
+    <table id="sopa"></table>
+</section>
+
+<footer>
+    🌈 Cuidar la naturaleza es cuidar nuestro futuro 🌈
+</footer>
+
+<script>
+/* ===== SONIDOS ===== */
+function reproducir(id){
+    document.querySelectorAll("audio").forEach(a => {
+        a.pause();
+        a.currentTime = 0;
+    });
+    document.getElementById(id).play();
+}
+
+/* ===== MEMORAMA ===== */
+const iconos = ["🌳","🌳","💧","💧","☀️","☀️","🐝","🐝"];
+let primera = null, bloqueo = false, parejas = 0;
+
+iconos.sort(() => Math.random() - 0.5);
+const memorama = document.getElementById("memorama");
+
+iconos.forEach(icono => {
+    const carta = document.createElement("div");
+    carta.className = "carta";
+    carta.textContent = "❓";
+    carta.dataset.valor = icono;
+
+    carta.onclick = () => {
+        if(bloqueo || carta.textContent !== "❓") return;
+        carta.textContent = icono;
+
+        if(!primera){
+            primera = carta;
+        } else {
+            if(primera.dataset.valor !== icono){
+                bloqueo = true;
+                setTimeout(() => {
+                    primera.textContent = "❓";
+                    carta.textContent = "❓";
+                    primera = null;
+                    bloqueo = false;
+                }, 700);
+            } else {
+                parejas++;
+                primera = null;
+                if(parejas === iconos.length / 2){
+                    alert("🎉 ¡Ganaste el memorama!");
+                }
+            }
+        }
+    };
+    memorama.appendChild(carta);
+});
+
+/* ===== SOPA DE LETRAS ===== */
+const palabras = ["ARBOL","AGUA","SOL","TIERRA","AIRE","FLOR","BOSQUE","RIO"];
+const letras = [
+    ["A","R","B","O","L","X","A","I"],
+    ["A","G","U","A","S","R","R","R"],
+    ["S","O","L","T","I","E","R","E"],
+    ["T","I","E","R","R","A","O","X"],
+    ["A","I","R","E","X","F","L","O"],
+    ["B","O","S","Q","U","E","X","R"],
+    ["B","Y","R","E","Q","W","B","H"],
+    ["R","I","O","X","H","G","B","L"]
+];
+
+const sopa = document.getElementById("sopa");
+let seleccion = "", celdas = [];
+
+letras.forEach(fila => {
+    const tr = document.createElement("tr");
+    fila.forEach(letra => {
+        const td = document.createElement("td");
+        td.textContent = letra;
+        td.onclick = () => {
+            td.style.backgroundColor = "#81c784";
+            seleccion += letra;
+            celdas.push(td);
+
+            if(palabras.includes(seleccion)){
+                celdas.forEach(c => {
+                    c.style.backgroundColor = "#4CAF50";
+                    c.style.color = "white";
+                });
+                alert("✅ Encontraste " + seleccion);
+                seleccion = "";
+                celdas = [];
+            }
+
+            if(seleccion.length > 10){
+                celdas.forEach(c => c.style.backgroundColor = "#e8f5e9");
+                seleccion = "";
+                celdas = [];
+            }
+        };
+        tr.appendChild(td);
+    });
+    sopa.appendChild(tr);
+});
+</script>
+
+</body>
+</html>
